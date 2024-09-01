@@ -12,3 +12,9 @@ model Mor {
   id        String   @id @default(cuid())
   updatedAt DateTime @updatedAt
 }
+
+model Shai {
+  createdAt DateTime @default(now())
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+}
