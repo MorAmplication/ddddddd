@@ -13,16 +13,31 @@ import * as graphql from "@nestjs/graphql";
 import { GraphQLError } from "graphql";
 import { isRecordNotFoundError } from "../../prisma.util";
 import { MetaQueryPayload } from "../../util/MetaQueryPayload";
+import * as nestAccessControl from "nest-access-control";
+import * as gqlACGuard from "../../auth/gqlAC.guard";
+import { GqlDefaultAuthGuard } from "../../auth/gqlDefaultAuth.guard";
+import * as common from "@nestjs/common";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { Shai } from "./Shai";
 import { ShaiCountArgs } from "./ShaiCountArgs";
 import { ShaiFindManyArgs } from "./ShaiFindManyArgs";
 import { ShaiFindUniqueArgs } from "./ShaiFindUniqueArgs";
 import { DeleteShaiArgs } from "./DeleteShaiArgs";
 import { ShaiService } from "../shai.service";
+@common.UseGuards(GqlDefaultAuthGuard, gqlACGuard.GqlACGuard)
 @graphql.Resolver(() => Shai)
 export class ShaiResolverBase {
-  constructor(protected readonly service: ShaiService) {}
+  constructor(
+    protected readonly service: ShaiService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
 
+  @graphql.Query(() => MetaQueryPayload)
+  @nestAccessControl.UseRoles({
+    resource: "Shai",
+    action: "read",
+    possession: "any",
+  })
   async _shaisMeta(
     @graphql.Args() args: ShaiCountArgs
   ): Promise<MetaQueryPayload> {
@@ -32,12 +47,24 @@ export class ShaiResolverBase {
     };
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => [Shai])
+  @nestAccessControl.UseRoles({
+    resource: "Shai",
+    action: "read",
+    possession: "any",
+  })
   async shais(@graphql.Args() args: ShaiFindManyArgs): Promise<Shai[]> {
     return this.service.shais(args);
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @graphql.Query(() => Shai, { nullable: true })
+  @nestAccessControl.UseRoles({
+    resource: "Shai",
+    action: "read",
+    possession: "own",
+  })
   async shai(@graphql.Args() args: ShaiFindUniqueArgs): Promise<Shai | null> {
     const result = await this.service.shai(args);
     if (result === null) {
@@ -47,6 +74,11 @@ export class ShaiResolverBase {
   }
 
   @graphql.Mutation(() => Shai)
+  @nestAccessControl.UseRoles({
+    resource: "Shai",
+    action: "delete",
+    possession: "any",
+  })
   async deleteShai(@graphql.Args() args: DeleteShaiArgs): Promise<Shai | null> {
     try {
       return await this.service.deleteShai(args);

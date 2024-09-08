@@ -16,17 +16,35 @@ import * as errors from "../../errors";
 import { Request } from "express";
 import { plainToClass } from "class-transformer";
 import { ApiNestedQuery } from "../../decorators/api-nested-query.decorator";
+import * as nestAccessControl from "nest-access-control";
+import * as defaultAuthGuard from "../../auth/defaultAuth.guard";
 import { ShaiService } from "../shai.service";
+import { AclValidateRequestInterceptor } from "../../interceptors/aclValidateRequest.interceptor";
+import { AclFilterResponseInterceptor } from "../../interceptors/aclFilterResponse.interceptor";
 import { ShaiCreateInput } from "./ShaiCreateInput";
 import { Shai } from "./Shai";
 import { ShaiFindManyArgs } from "./ShaiFindManyArgs";
 import { ShaiWhereUniqueInput } from "./ShaiWhereUniqueInput";
 import { ShaiUpdateInput } from "./ShaiUpdateInput";
 
+@swagger.ApiBearerAuth()
+@common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
 export class ShaiControllerBase {
-  constructor(protected readonly service: ShaiService) {}
+  constructor(
+    protected readonly service: ShaiService,
+    protected readonly rolesBuilder: nestAccessControl.RolesBuilder
+  ) {}
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Post()
   @swagger.ApiCreatedResponse({ type: Shai })
+  @nestAccessControl.UseRoles({
+    resource: "Shai",
+    action: "create",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async createShai(@common.Body() data: ShaiCreateInput): Promise<Shai> {
     return await this.service.createShai({
       data: data,
@@ -38,9 +56,18 @@ export class ShaiControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get()
   @swagger.ApiOkResponse({ type: [Shai] })
   @ApiNestedQuery(ShaiFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Shai",
+    action: "read",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async shais(@common.Req() request: Request): Promise<Shai[]> {
     const args = plainToClass(ShaiFindManyArgs, request.query);
     return this.service.shais({
@@ -53,9 +80,18 @@ export class ShaiControllerBase {
     });
   }
 
+  @common.UseInterceptors(AclFilterResponseInterceptor)
   @common.Get("/:id")
   @swagger.ApiOkResponse({ type: Shai })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Shai",
+    action: "read",
+    possession: "own",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async shai(
     @common.Param() params: ShaiWhereUniqueInput
   ): Promise<Shai | null> {
@@ -75,9 +111,18 @@ export class ShaiControllerBase {
     return result;
   }
 
+  @common.UseInterceptors(AclValidateRequestInterceptor)
   @common.Patch("/:id")
   @swagger.ApiOkResponse({ type: Shai })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Shai",
+    action: "update",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async updateShai(
     @common.Param() params: ShaiWhereUniqueInput,
     @common.Body() data: ShaiUpdateInput
@@ -105,6 +150,14 @@ export class ShaiControllerBase {
   @common.Delete("/:id")
   @swagger.ApiOkResponse({ type: Shai })
   @swagger.ApiNotFoundResponse({ type: errors.NotFoundException })
+  @nestAccessControl.UseRoles({
+    resource: "Shai",
+    action: "delete",
+    possession: "any",
+  })
+  @swagger.ApiForbiddenResponse({
+    type: errors.ForbiddenException,
+  })
   async deleteShai(
     @common.Param() params: ShaiWhereUniqueInput
   ): Promise<Shai | null> {
