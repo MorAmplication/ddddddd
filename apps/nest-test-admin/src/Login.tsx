@@ -1,16 +1,21 @@
 import * as React from "react";
-import { useState } from "react";
 import { useLogin, useNotify, Notification, defaultTheme } from "react-admin";
-import { Button, createTheme, ThemeProvider } from "@mui/material";
+import { ThemeProvider } from "@material-ui/styles";
+import { createTheme } from "@material-ui/core/styles";
+import { Button } from "@material-ui/core";
 import "./login.scss";
-import LoginForm from "./LoginForm";
 
 const CLASS_NAME = "login-page";
 
-const Login = ({ theme }: any) => {
+const LoginPage = () => {
   const login = useLogin();
   const notify = useNotify();
-  const BASE_URI = process.env.REACT_APP_SERVER_URL;
+  const BASE_URI = process.env.REACT_APP_SERVER_URL || "";
+  const submit = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    notify("Redirecting to Auth0");
+    login({});
+  };
 
   return (
     <ThemeProvider theme={createTheme(defaultTheme)}>
@@ -45,7 +50,18 @@ const Login = ({ theme }: any) => {
               Sign in to a React-Admin client with ready-made forms for creating
               and editing all the data models of your application
             </div>
-            <LoginForm />
+            <div className={`${CLASS_NAME}__box__message`}>
+              Click the button below to sign in to the React-Admin client with
+              Auth0 authentication.
+            </div>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              onClick={submit}
+            >
+              Log in
+            </Button>
           </div>
           <div className={`${CLASS_NAME}__box`}>
             <img
@@ -81,4 +97,4 @@ const Login = ({ theme }: any) => {
   );
 };
 
-export default Login;
+export default LoginPage;

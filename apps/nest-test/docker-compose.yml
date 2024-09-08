@@ -14,8 +14,6 @@ services:
       KAFKA_ENABLE_SSL: ${KAFKA_ENABLE_SSL}
       KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID}
       KAFKA_GROUP_ID: ${KAFKA_GROUP_ID}
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      JWT_EXPIRATION: ${JWT_EXPIRATION}
     depends_on:
       - migrate
     restart: on-failure
