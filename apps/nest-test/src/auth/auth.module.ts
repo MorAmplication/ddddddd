@@ -1,15 +1,25 @@
-import { Module, forwardRef } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { PassportModule } from "@nestjs/passport";
-import { JwtStrategy } from "./jwt/jwt.strategy";
+import { SecretsManagerModule } from "../providers/secrets/secretsManager.module";
+import { SecretsManagerService } from "../providers/secrets/secretsManager.service";
+import { AuthController } from "./auth.controller";
+import { AuthResolver } from "./auth.resolver";
+import { AuthService } from "./auth.service";
+import { BasicStrategy } from "./basic/basic.strategy";
+import { PasswordService } from "./password.service";
+import { TokenService } from "./token.service";
 import { UserModule } from "../user/user.module";
 
 @Module({
-  imports: [
-    forwardRef(() => UserModule),
-    PassportModule.register({ defaultStrategy: "jwt" }),
+  imports: [forwardRef(() => UserModule), PassportModule, SecretsManagerModule],
+  providers: [
+    AuthService,
+    BasicStrategy,
+    PasswordService,
+    AuthResolver,
+    TokenService,
   ],
-  providers: [JwtStrategy],
-  controllers: [],
-  exports: [PassportModule],
+  controllers: [AuthController],
+  exports: [AuthService, PasswordService],
 })
 export class AuthModule {}
