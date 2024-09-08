@@ -17,7 +17,7 @@ import { UserList } from "./user/UserList";
 import { UserCreate } from "./user/UserCreate";
 import { UserEdit } from "./user/UserEdit";
 import { UserShow } from "./user/UserShow";
-import { httpAuthProvider } from "./auth-provider/ra-auth-http";
+import { jwtAuthProvider } from "./auth-provider/ra-auth-jwt";
 
 const App = (): React.ReactElement => {
   const [dataProvider, setDataProvider] = useState<DataProvider | null>(null);
@@ -38,7 +38,7 @@ const App = (): React.ReactElement => {
       <Admin
         title={"nest-test"}
         dataProvider={dataProvider}
-        authProvider={httpAuthProvider}
+        authProvider={jwtAuthProvider}
         theme={theme}
         dashboard={Dashboard}
         loginPage={Login}
